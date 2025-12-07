@@ -23,8 +23,6 @@ GREEN = (50, 200, 50)
 BLUE = (50, 50, 200)
 
 # --- 사용자 지정 배경 이미지 경로 ---
-# TODO: 여기에 사용하고 싶은 이미지 파일 경로를 설정하세요.
-# 예시: 'assets/start_bg.png'
 IMAGE_PATH = os.path.join('assets', 'start_bg.png') 
 
 # --- 기물 클래스 ---
@@ -65,7 +63,6 @@ class Piece:
         self.image_key = f'{prefix}{symbol}'
         
         if self.image_key not in Piece.IMAGE_CACHE:
-            # 파일 경로: assets/pieces/wQ.png 와 같은 형태
             filename = os.path.join('assets', 'pieces', f'{self.image_key}.png')
             try:
                 original_image = pygame.image.load(filename).convert_alpha()
@@ -153,7 +150,7 @@ class Game:
             self.board[0][i] = Piece(names[i], 'black', 0, i)
             self.board[7][i] = Piece(names[i], 'white', 7, i)
 
-    # --- 표준 체스 이동 규칙 및 슬라이딩 기물 로직 (생략) ---
+    # --- 표준 체스 이동 규칙 및 슬라이딩 기물 로직 ---
     def get_valid_moves(self, piece, board_state=None):
         if board_state is None: board_state = self.board
         moves = []
@@ -216,7 +213,7 @@ class Game:
                             
         return moves
         
-    # --- AI의 뇌: 보드 평가 (생략: 기존 코드와 동일) ---
+    # --- AI의 뇌: 보드 평가  ---
     def evaluate_board(self, board):
         score = 0
         for r in range(ROWS):
@@ -247,8 +244,7 @@ class Game:
             for move in valid_moves:
                 temp_board_obj = copy.deepcopy(self.board)  
                 temp_piece = temp_board_obj[piece.row][piece.col]
-                
-                # 시뮬레이션에서는 얕은 복사가 아닌 깊은 복사된 보드를 사용해야 합니다.
+            
                 simulated_board = self.simulate_move(temp_piece, move, temp_board_obj)
                 
                 score = self.evaluate_board(simulated_board)
@@ -277,7 +273,7 @@ class Game:
             dmg = attacker.ap + (3 if attacker.name == 'Knight' else 0)
             real_dmg = max(0, dmg - target.dmg_reduction)
             
-            # 퀸 관통 공격 (쿨타임 고려)
+            # 퀸 관통 공격 (3턴의 쿨타임 고려)
             if attacker.name == 'Queen' and attacker.special_cooldown == 0:
                 # 1. 방향 벡터 계산
                 dr = 0
@@ -295,7 +291,6 @@ class Game:
                         second_dmg = attacker.ap + (3 if attacker.name == 'Knight' else 0)
                         second_real_dmg = max(0, second_dmg - behind_target.dmg_reduction)
                         behind_target.hp -= second_real_dmg
-                        # 시뮬레이션에서는 쿨타임을 적용하지 않음 (단순히 이득 평가만)
                         
                         if behind_target.hp <= 0:
                             board_copy[behind_r][behind_c] = None
@@ -315,7 +310,7 @@ class Game:
             attacker.move(target_r, target_c)
             board_copy[target_r][target_c] = attacker
             
-        # 힐/버프 적용 (생략: 기존 코드와 동일)
+        # 힐/버프 적용 
         if attacker.name == 'Bishop':
              for r in range(target_r-1, target_r+2):
                  for c in range(target_c-1, target_c+2):
@@ -501,7 +496,7 @@ class Game:
                     p.special_cooldown -= 1
         print(f"Turn: {self.turn}")
         
-    # --- 화면 그리기 ---
+    # --- 화면 표시시 ---
     def draw(self):
         self.win.fill((0,0,0))
         for r in range(ROWS):
@@ -521,7 +516,7 @@ class Game:
                 pygame.draw.circle(self.win, (0, 255, 0), 
                                    (c*SQUARE_SIZE + SQUARE_SIZE//2, r*SQUARE_SIZE + SQUARE_SIZE//2), 10)
 
-        # 1. Draw non-animating pieces
+        # 애니매이션이 없는 기물 표시
         animating_pieces = []
         if self.is_animating:
             animating_pieces.append(self.animation_piece)
@@ -539,17 +534,17 @@ class Game:
                 if p and p not in animating_pieces:
                     p.draw(self.win)
         
-        # 2. Draw damage numbers
+        # 데미지 표시
         self.draw_damage_display()
         
-        # 3. Draw animating piece / target
+        # 애니매이션 기물과 공격당하는 대상 표시
         if self.is_animating:
             self.draw_attack_animation()
             
-        # 4. Draw Cooldown Display (보드 바깥 영역)
+        # 퀸의 관통 공격 쿨타임 표시시
         self.draw_cooldown_display()
         
-        # 5. 게임 종료 시 승자 표시
+        # 게임 종료 시 승자 표시
         if self.winner:
             s = pygame.Surface((DISPLAY_WIDTH, DISPLAY_HEIGHT))  
             s.set_alpha(180)  
@@ -582,7 +577,7 @@ class Game:
         current_x, current_y = start_x, start_y
         
         if target and target.color != piece.color and target.hp > 0:
-            # 공격 후 복귀 애니메이션 (하스스톤 스타일)
+            # 공격 후 복귀 애니메이션
             if progress < 0.5: # 공격
                 interp = progress * 2
                 current_x = start_x + (target_x - start_x) * interp
@@ -615,7 +610,7 @@ class Game:
             draw_y = int(y) - SQUARE_SIZE // 2
             self.win.blit(piece.image, (draw_x, draw_y))
         else:
-            # 이미지 없을 경우 대체 원형 표시 (생략: Piece.draw와 동일)
+            # 이미지 없을 경우 대체 원형 표시
             pass 
 
         # 스탯 표시 (애니메이션 중에도 스탯이 따라다니도록)
@@ -696,7 +691,7 @@ class Game:
 def draw_start_screen(win):
     """시작 화면을 그리고 '게임 시작' 버튼 영역을 반환합니다."""
     
-    # 1. 배경 이미지 로드 및 그리기
+    # 배경 이미지 로드 및 그리기
     try:
         # 이미지를 화면 크기에 맞게 로드 및 크기 조정
         background_image = pygame.image.load(IMAGE_PATH).convert()
@@ -709,13 +704,13 @@ def draw_start_screen(win):
         print(f"Warning: 배경 이미지 파일 없음 - {IMAGE_PATH}. 기본 배경을 사용합니다.")
         win.fill((30, 30, 30))
         
-    # 2. 가독성을 위한 오버레이 (반투명 검정색)
+    # 가독성을 위한 오버레이 (반투명 검정색)
     overlay = pygame.Surface((DISPLAY_WIDTH, DISPLAY_HEIGHT))
     overlay.set_alpha(150) # 투명도 설정 (0: 투명, 255: 불투명)
     overlay.fill((0, 0, 0))
     win.blit(overlay, (0, 0))
 
-    # 3. 제목 표시
+    # 제목 표시
     title_font = pygame.font.SysFont('malgungothic', 72, bold=True)
     subtitle_font = pygame.font.SysFont('malgungothic', 36)
     
@@ -728,13 +723,13 @@ def draw_start_screen(win):
     win.blit(title_text, title_rect)
     win.blit(subtitle_text, subtitle_rect)
 
-    # 4. '게임 시작' 버튼 영역
+    # '게임 시작' 버튼 영역
     button_width, button_height = 250, 80
     button_x = DISPLAY_WIDTH // 2 - button_width // 2
     button_y = DISPLAY_HEIGHT // 2 + 50
     button_rect = pygame.Rect(button_x, button_y, button_width, button_height)
     
-    # 버튼 그리기
+    # 버튼 그리기 (초록색 배경)
     pygame.draw.rect(win, GREEN, button_rect, border_radius=15)
     
     # 버튼 텍스트
@@ -753,7 +748,7 @@ def main():
     pygame.display.set_caption("Chess RPG with Special Abilities")
     clock = pygame.time.Clock()
     
-    # 1. 메인 메뉴 루프
+    # 메인 메뉴 루프
     in_menu = True
     while in_menu:
         clock.tick(60)
@@ -771,7 +766,7 @@ def main():
                     in_menu = False # 메뉴 종료, 게임 루프로 진입
                     print("Game Starting...")
                     
-    # 2. 게임 플레이 루프
+    # 게임 플레이 루프
     game = Game(win) # 버튼 클릭 후 게임 객체 생성
     run = True
     while run:
@@ -779,20 +774,20 @@ def main():
         
         now = pygame.time.get_ticks()
         
-        # 1. Animation Completion Check
+        # 애니메이션 완성도 확인
         if game.is_animating:
             if now - game.animation_start_time >= game.animation_duration:
                 game.complete_move_after_animation()
             game.draw()
             continue
         
-        # 2. AI Turn 
+        # AI 차례
         if game.turn == 'black' and game.winner is None:
             pygame.time.delay(500)
             game.ai_move_minimax()
             continue 
         
-        # 3. Player Turn & Event Handling
+        # 플레이어 차례와 이벤트 관리
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 run = False
@@ -826,4 +821,5 @@ def main():
     sys.exit()
 
 if __name__ == "__main__":
+
     main()
