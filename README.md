@@ -114,13 +114,13 @@
     python chess_source_code.py
     ```
 
-### 3.3. 프로젝트 스크린샷 (필수)
+### 3.3. 프로젝트 스크린샷
 
-**[초기 화면]** (프로젝트 배경 및 시작 버튼 확인)
+**[초기 화면]** 
 <img width="1151" height="932" alt="Image" src="https://github.com/user-attachments/assets/cff13619-1204-41d5-b8b8-a64975aeed23" />
 
 
-**[게임 플레이 화면]** (초록색은 체력, 빨간색은 공격력을 뜻합니다.)
+**[게임 플레이 화면]** (각 기물의 아래에 있는 초록색 숫자는 체력, 빨간색은 공격력을 뜻합니다.)
 <img width="1146" height="937" alt="Image" src="https://github.com/user-attachments/assets/04da4a88-99ff-41cb-b108-a41e52a47f88" />
 
 ---
